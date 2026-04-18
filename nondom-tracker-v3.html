@@ -1,0 +1,2615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Domicile">
+<title>Domicile — Multi-Jurisdiction Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1512;
+    --ink-soft: #3a332e;
+    --paper: #f4efe8;
+    --paper-warm: #ede6db;
+    --rule: #c9bfb0;
+    --accent: #8b2f1d;
+    --accent-soft: #b85a42;
+    --gold: #a88b3d;
+    --green: #4a6b3a;
+    --muted: #8a7f70;
+    --danger: #8b2f1d;
+    /* Jurisdiction colors */
+    --cy: #0b5394;     /* Cyprus — deep blue */
+    --lt: #7a6a3d;     /* Lithuania — olive/bronze */
+    --uk: #1a1512;     /* UK — ink */
+    --other: #6b6b6b;
+    --abroad: #4a6b3a;
+    --transit: #a88b3d;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Fraunces', Georgia, serif;
+    font-feature-settings: "liga" 1, "onum" 1;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: contain;
+  }
+
+  body {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(168, 139, 61, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(11, 83, 148, 0.04) 0%, transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  .app {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 20px 18px 120px;
+  }
+
+  /* Masthead */
+  .masthead {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 14px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .masthead::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: 0; right: 0;
+    height: 1px;
+    background: var(--ink);
+  }
+  .masthead-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .masthead h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 40px;
+    letter-spacing: -0.02em;
+    margin: 0;
+    line-height: 1;
+    font-variation-settings: "opsz" 144;
+  }
+  .masthead h1 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--cy);
+  }
+  .masthead-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--rule);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab {
+    flex: 1;
+    min-width: 80px;
+    background: transparent;
+    border: none;
+    padding: 12px 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+  }
+  .tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Jurisdiction cards - the headline */
+  .juris-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  @media (min-width: 560px) {
+    .juris-grid { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+  .juris-card {
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 14px 14px 12px;
+    position: relative;
+    border-top: 3px solid var(--muted);
+  }
+  .juris-card.cyprus { border-top-color: var(--cy); }
+  .juris-card.lithuania { border-top-color: var(--lt); }
+  .juris-card.uk { border-top-color: var(--uk); }
+
+  .juris-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .juris-name {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-style: italic;
+    font-weight: 500;
+  }
+  .juris-flag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .juris-days {
+    font-family: 'Fraunces', serif;
+    font-size: 42px;
+    font-weight: 400;
+    line-height: 1;
+    font-variation-settings: "opsz" 144;
+  }
+  .juris-target {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    margin-top: 4px;
+  }
+  .juris-bar {
+    height: 3px;
+    background: var(--rule);
+    margin-top: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .juris-bar-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    transition: width 0.4s ease;
+  }
+  .juris-card.cyprus .juris-bar-fill { background: var(--cy); }
+  .juris-card.lithuania .juris-bar-fill { background: var(--lt); }
+  .juris-card.uk .juris-bar-fill { background: var(--uk); }
+
+  .juris-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 8px;
+    padding: 4px 6px;
+    display: inline-block;
+  }
+  .juris-status.good { background: rgba(74, 107, 58, 0.15); color: var(--green); }
+  .juris-status.warn { background: rgba(168, 139, 61, 0.2); color: var(--lt); }
+  .juris-status.danger { background: rgba(139, 47, 29, 0.15); color: var(--accent); }
+
+  /* Dashboard secondary stats */
+  .dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat {
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 12px 14px;
+  }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1;
+  }
+  .stat-value .unit {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .stat-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Banner */
+  .banner {
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--gold);
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .banner.danger { border-left-color: var(--accent); background: #f4e3df; }
+  .banner.safe { border-left-color: var(--green); }
+  .banner strong { font-family: 'Fraunces', serif; font-size: 14px; }
+  .banner .mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* Section heading */
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 24px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .section-head h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 22px;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .section-head .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Calendar */
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .cal-nav button {
+    background: transparent;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 6px 10px;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+  }
+  .cal-nav button:active { background: var(--ink); color: var(--paper); }
+  .cal-title {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-style: italic;
+  }
+
+  .calendar {
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 10px;
+  }
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 4px;
+  }
+  .cal-weekdays div {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 4px 0;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    background: var(--paper);
+    border: 1px solid transparent;
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+    color: var(--ink);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.1s;
+    padding: 0;
+    min-height: 38px;
+  }
+  .cal-day.empty { background: transparent; cursor: default; }
+  .cal-day.today { border-color: var(--accent); font-weight: 600; }
+  .cal-day.j-cyprus { background: var(--cy); color: var(--paper); }
+  .cal-day.j-lithuania { background: var(--lt); color: var(--paper); }
+  .cal-day.j-uk { background: var(--uk); color: var(--paper); }
+  .cal-day.j-other { background: var(--other); color: var(--paper); }
+  .cal-day.j-transit { background: var(--transit); color: var(--paper); }
+  .cal-day.has-proof::after {
+    content: "";
+    position: absolute;
+    bottom: 3px; right: 3px;
+    width: 5px; height: 5px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  .cal-day.j-cyprus.has-proof::after,
+  .cal-day.j-lithuania.has-proof::after,
+  .cal-day.j-uk.has-proof::after,
+  .cal-day.j-other.has-proof::after,
+  .cal-day.j-transit.has-proof::after { background: var(--paper); }
+  .cal-day.worked::before {
+    content: "•";
+    position: absolute;
+    top: 1px; left: 4px;
+    font-size: 10px;
+    line-height: 1;
+    color: var(--accent);
+  }
+  .cal-day.j-cyprus.worked::before,
+  .cal-day.j-lithuania.worked::before,
+  .cal-day.j-uk.worked::before,
+  .cal-day.j-other.worked::before { color: var(--paper); }
+  .cal-day.gap {
+    background: repeating-linear-gradient(45deg, var(--paper), var(--paper) 3px, #e8dfd0 3px, #e8dfd0 6px);
+    border: 1px dashed var(--accent-soft);
+  }
+  .cal-day:active { transform: scale(0.95); }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-swatch { width: 10px; height: 10px; border: 1px solid var(--rule); }
+
+  /* Heatmap */
+  .heatmap {
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 14px 10px;
+    overflow-x: auto;
+  }
+  .heatmap-grid {
+    display: grid;
+    gap: 2px;
+    min-width: 560px;
+  }
+  .heatmap-cell {
+    aspect-ratio: 1;
+    min-height: 10px;
+    background: var(--paper);
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  .heatmap-cell.j-cyprus { background: var(--cy); }
+  .heatmap-cell.j-lithuania { background: var(--lt); }
+  .heatmap-cell.j-uk { background: var(--uk); }
+  .heatmap-cell.j-other { background: var(--other); }
+  .heatmap-cell.j-transit { background: var(--transit); }
+  .heatmap-cell.empty { background: transparent; }
+  .heatmap-cell.today { border-color: var(--accent); }
+  .heatmap-months {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    min-width: 560px;
+  }
+
+  /* Entry list */
+  .entries { display: flex; flex-direction: column; gap: 0; }
+  .entry {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px dotted var(--rule);
+    align-items: center;
+  }
+  .entry:last-child { border-bottom: none; }
+  .entry-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    min-width: 70px;
+  }
+  .entry-body { font-family: 'Fraunces', serif; font-size: 15px; }
+  .entry-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .entry-status.j-cyprus { color: var(--cy); border-color: var(--cy); }
+  .entry-status.j-lithuania { color: var(--lt); border-color: var(--lt); }
+  .entry-status.j-uk { color: var(--uk); border-color: var(--uk); }
+  .entry-status.j-other { color: var(--other); border-color: var(--other); }
+  .entry-status.j-transit { color: var(--transit); border-color: var(--transit); }
+  .entry-note {
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin-top: 2px;
+  }
+  .entry-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--accent);
+    margin-top: 3px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* Trips */
+  .trip-card {
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  .trip-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .trip-destination {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-style: italic;
+  }
+  .trip-duration {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .trip-dates {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  /* Gaps */
+  .gap-list {
+    background: #f4e3df;
+    border: 1px solid var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    padding: 12px 14px;
+    margin-bottom: 16px;
+  }
+  .gap-list-title {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-style: italic;
+    margin-bottom: 8px;
+  }
+  .gap-item {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 0;
+    border-bottom: 1px dotted var(--rule);
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+  .gap-item:last-child { border-bottom: none; }
+  .gap-item:active { background: rgba(139, 47, 29, 0.1); }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 21, 18, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 100;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  .modal {
+    background: var(--paper);
+    width: 100%;
+    max-width: 760px;
+    max-height: 92vh;
+    overflow-y: auto;
+    border-top: 2px solid var(--ink);
+    padding: 20px 20px calc(24px + env(safe-area-inset-bottom));
+    animation: slideUp 0.25s ease;
+    border-radius: 12px 12px 0 0;
+  }
+  .modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .modal-head h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 400;
+    margin: 0;
+  }
+  .modal-head .date-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .close-btn {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .field input[type="text"],
+  .field input[type="date"],
+  .field input[type="number"],
+  .field textarea,
+  .field select {
+    width: 100%;
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 10px 12px;
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    outline: none;
+    border-color: var(--ink);
+  }
+
+  /* Jurisdiction picker */
+  .juris-picker {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .juris-picker button {
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 12px 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .juris-picker button.active[data-j="cyprus"] { background: var(--cy); color: var(--paper); border-color: var(--cy); }
+  .juris-picker button.active[data-j="lithuania"] { background: var(--lt); color: var(--paper); border-color: var(--lt); }
+  .juris-picker button.active[data-j="uk"] { background: var(--uk); color: var(--paper); border-color: var(--uk); }
+  .juris-picker button.active[data-j="other"] { background: var(--other); color: var(--paper); border-color: var(--other); }
+  .juris-picker button.active[data-j="transit"] { background: var(--transit); color: var(--paper); border-color: var(--transit); }
+
+  .juris-picker.five { grid-template-columns: repeat(5, 1fr); }
+
+  /* Checkbox row */
+  .check-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 10px 12px;
+    cursor: pointer;
+  }
+  .check-row input[type="checkbox"] {
+    width: 18px; height: 18px;
+    accent-color: var(--ink);
+  }
+  .check-row label {
+    margin: 0 !important;
+    font-family: 'Fraunces', serif !important;
+    font-size: 14px !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    color: var(--ink) !important;
+    cursor: pointer;
+    flex: 1;
+  }
+  .check-row .hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    display: block;
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Proof files */
+  .proof-section {
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 12px;
+    margin-top: 8px;
+  }
+  .proof-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .proof-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    font-size: 13px;
+  }
+  .proof-item-info { flex: 1; overflow: hidden; }
+  .proof-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .proof-size {
+    font-size: 9px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .proof-actions { display: flex; gap: 4px; }
+  .proof-btn {
+    background: transparent;
+    border: 1px solid var(--rule);
+    padding: 4px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .proof-btn.del { color: var(--accent); border-color: var(--accent); }
+  .file-label {
+    display: block;
+    text-align: center;
+    padding: 10px;
+    border: 1px dashed var(--rule);
+    background: var(--paper);
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .file-label input { display: none; }
+
+  .btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .btn {
+    padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid var(--ink);
+  }
+  .btn-primary { background: var(--ink); color: var(--paper); }
+  .btn-secondary { background: transparent; color: var(--ink); }
+  .btn-danger {
+    background: transparent;
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .toolbar {
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    background: var(--paper);
+    border-top: 1px solid var(--ink);
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    z-index: 50;
+  }
+  .toolbar button {
+    flex: 1;
+    max-width: 180px;
+    padding: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: transparent;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .toolbar button.primary { background: var(--ink); color: var(--paper); }
+
+  .settings-group {
+    padding: 14px 0;
+    border-bottom: 1px dotted var(--rule);
+  }
+  .settings-group:last-child { border-bottom: none; }
+  .settings-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .settings-description {
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .info-block {
+    background: var(--paper-warm);
+    border-left: 3px solid var(--gold);
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    font-style: italic;
+    color: var(--ink-soft);
+    margin: 10px 0;
+  }
+  .info-block strong { color: var(--ink); font-style: normal; }
+
+  .range-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* Country stack */
+  .country-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .country-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    align-items: center;
+  }
+  .country-row .days {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+  }
+
+  .audit-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 2px 6px;
+    margin-top: 4px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* Summary row for leaver SRT */
+  .srt-summary {
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 12px;
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+  .srt-summary .label { color: var(--ink-soft); }
+  .srt-summary .val { text-align: right; font-weight: 500; }
+  .srt-summary .val.warn { color: var(--accent); }
+  .srt-summary hr {
+    grid-column: span 2;
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 4px 0;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="masthead">
+    <div class="masthead-top">
+      <span id="today-date">—</span>
+      <span>№ 003</span>
+    </div>
+    <h1>Domicile <em>Ledger</em></h1>
+    <div class="masthead-sub">Cyprus · Lithuania · United Kingdom</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="calendar">Calendar</button>
+    <button class="tab" data-tab="trips">Trips</button>
+    <button class="tab" data-tab="year">Year</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="tab-panel active" id="tab-overview">
+
+    <!-- Primary banner -->
+    <div id="primary-banner" class="banner"></div>
+
+    <!-- Gap warning -->
+    <div id="gap-list" class="gap-list" style="display:none;"></div>
+
+    <!-- Jurisdiction cards -->
+    <div class="juris-grid">
+      <div class="juris-card cyprus">
+        <div class="juris-head">
+          <div class="juris-name">Cyprus</div>
+          <div class="juris-flag">60d min</div>
+        </div>
+        <div class="juris-days"><span id="cy-days">0</span></div>
+        <div class="juris-target">of 60 required · <span id="cy-year">—</span></div>
+        <div class="juris-bar"><div class="juris-bar-fill" id="cy-bar" style="width: 0%"></div></div>
+        <div class="juris-status" id="cy-status">—</div>
+      </div>
+
+      <div class="juris-card lithuania">
+        <div class="juris-head">
+          <div class="juris-name">Lithuania</div>
+          <div class="juris-flag">183d cap</div>
+        </div>
+        <div class="juris-days"><span id="lt-days">0</span></div>
+        <div class="juris-target">of 183 limit · <span id="lt-year">—</span></div>
+        <div class="juris-bar"><div class="juris-bar-fill" id="lt-bar" style="width: 0%"></div></div>
+        <div class="juris-status" id="lt-status">—</div>
+      </div>
+
+      <div class="juris-card uk">
+        <div class="juris-head">
+          <div class="juris-name">United Kingdom</div>
+          <div class="juris-flag" id="uk-threshold-label">— cap</div>
+        </div>
+        <div class="juris-days"><span id="uk-days">0</span></div>
+        <div class="juris-target">of <span id="uk-threshold-value">—</span> limit · <span id="uk-year">—</span></div>
+        <div class="juris-bar"><div class="juris-bar-fill" id="uk-bar" style="width: 0%"></div></div>
+        <div class="juris-status" id="uk-status">—</div>
+      </div>
+    </div>
+
+    <!-- Secondary stats -->
+    <div class="dashboard">
+      <div class="stat">
+        <div class="stat-label">Other countries</div>
+        <div class="stat-value"><span id="other-days">0</span><span class="unit"> days</span></div>
+        <div class="stat-meta" id="other-max-meta">Max single: 0d</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Transit</div>
+        <div class="stat-value"><span id="transit-days">0</span><span class="unit"> days</span></div>
+        <div class="stat-meta">Excluded from counts</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Entries</div>
+        <div class="stat-value"><span id="total-entries">0</span></div>
+        <div class="stat-meta"><span id="proof-count">0</span> with proof</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Coverage</div>
+        <div class="stat-value"><span id="coverage-pct">0</span><span class="unit">%</span></div>
+        <div class="stat-meta" id="coverage-meta">Calendar year logged</div>
+      </div>
+    </div>
+
+    <!-- UK SRT detailed summary -->
+    <div class="section-head">
+      <h2>UK SRT · Leaver Analysis</h2>
+      <span class="meta" id="uk-ty-label">—</span>
+    </div>
+    <div class="srt-summary" id="srt-summary"></div>
+
+    <!-- Country breakdown -->
+    <div class="section-head">
+      <h2>Days by Location</h2>
+      <span class="meta">Calendar Year</span>
+    </div>
+    <div class="country-stack" id="country-stack">
+      <div class="empty-state" style="padding: 20px;">No country data yet.</div>
+    </div>
+
+    <!-- Recent -->
+    <div class="section-head">
+      <h2>Recent Entries</h2>
+      <span class="meta">Last 10</span>
+    </div>
+    <div class="entries" id="entries-list">
+      <div class="empty-state">No entries yet. Tap Log Today below.</div>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="tab-panel" id="tab-calendar">
+    <div class="cal-nav">
+      <button id="prev-month">← Prev</button>
+      <div class="cal-title" id="cal-title">—</div>
+      <button id="next-month">Next →</button>
+    </div>
+    <div class="calendar">
+      <div class="cal-weekdays">
+        <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch" style="background: var(--cy);"></span>Cyprus</div>
+      <div class="legend-item"><span class="legend-swatch" style="background: var(--lt);"></span>Lithuania</div>
+      <div class="legend-item"><span class="legend-swatch" style="background: var(--uk);"></span>UK</div>
+      <div class="legend-item"><span class="legend-swatch" style="background: var(--other);"></span>Other</div>
+      <div class="legend-item"><span class="legend-swatch" style="background: var(--transit);"></span>Transit</div>
+      <div class="legend-item"><span class="legend-swatch" style="background: var(--accent); border-radius: 50%;"></span>Proof</div>
+      <div class="legend-item"><span class="legend-swatch" style="background: repeating-linear-gradient(45deg, var(--paper), var(--paper) 2px, #e8dfd0 2px, #e8dfd0 4px); border: 1px dashed var(--accent-soft);"></span>Gap</div>
+      <div class="legend-item"><span style="color:var(--accent);">•</span>Worked</div>
+    </div>
+  </div>
+
+  <!-- TRIPS -->
+  <div class="tab-panel" id="tab-trips">
+    <div class="section-head">
+      <h2>Trips &amp; Stays</h2>
+      <span class="meta"><span id="trips-count">0</span> grouped</span>
+    </div>
+    <div class="info-block">
+      Consecutive days in the same location grouped into single journeys.
+    </div>
+    <div id="trips-list">
+      <div class="empty-state">No trips logged yet.</div>
+    </div>
+  </div>
+
+  <!-- YEAR -->
+  <div class="tab-panel" id="tab-year">
+    <div class="section-head">
+      <h2>Year at a Glance</h2>
+      <span class="meta" id="year-label">—</span>
+    </div>
+    <div class="cal-nav">
+      <button id="prev-year">← Prev Year</button>
+      <div class="cal-title" id="year-title">—</div>
+      <button id="next-year">Next Year →</button>
+    </div>
+    <div class="heatmap">
+      <div class="heatmap-grid" id="heatmap-grid"></div>
+      <div class="heatmap-months" id="heatmap-months"></div>
+    </div>
+    <div class="legend" style="margin-top: 16px;">
+      <div class="legend-item"><span class="legend-swatch" style="background: var(--cy);"></span>Cyprus</div>
+      <div class="legend-item"><span class="legend-swatch" style="background: var(--lt);"></span>Lithuania</div>
+      <div class="legend-item"><span class="legend-swatch" style="background: var(--uk);"></span>UK</div>
+      <div class="legend-item"><span class="legend-swatch" style="background: var(--other);"></span>Other</div>
+      <div class="legend-item"><span class="legend-swatch" style="background: var(--transit);"></span>Transit</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Day modal -->
+<div class="modal-overlay" id="day-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 id="modal-title">—</h3>
+        <div class="date-sub" id="modal-subtitle">—</div>
+      </div>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="field">
+      <label>Where at midnight?</label>
+      <div class="juris-picker five">
+        <button data-j="cyprus" onclick="setJuris('cyprus')">Cyprus</button>
+        <button data-j="lithuania" onclick="setJuris('lithuania')">Lithuania</button>
+        <button data-j="uk" onclick="setJuris('uk')">UK</button>
+        <button data-j="other" onclick="setJuris('other')">Other</button>
+        <button data-j="transit" onclick="setJuris('transit')">Transit</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>City / Specific Location</label>
+      <input type="text" id="modal-location" placeholder="e.g. Limassol, Vilnius, London, Dubai">
+    </div>
+
+    <div class="field">
+      <label>Purpose</label>
+      <select id="modal-purpose">
+        <option value="">—</option>
+        <option value="residence">Residence (home base)</option>
+        <option value="business">Business</option>
+        <option value="personal">Personal / Leisure</option>
+        <option value="family">Family</option>
+        <option value="medical">Medical</option>
+        <option value="transit">Transit / Layover</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="check-row">
+        <input type="checkbox" id="modal-worked-uk">
+        <span>
+          Worked in UK for more than 3 hours
+          <span class="hint">Counts toward UK work-tie (40+ days)</span>
+        </span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label class="check-row">
+        <input type="checkbox" id="modal-worked-cy">
+        <span>
+          Carried on business / work in Cyprus
+          <span class="hint">Evidence for Cyprus 60-day rule substance</span>
+        </span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label>Flight / Reference</label>
+      <input type="text" id="modal-flight" placeholder="e.g. BA645, LCA → VNO">
+    </div>
+
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="modal-notes" placeholder="Hotels, meetings, context..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Proof</label>
+      <div class="proof-section">
+        <div class="proof-list" id="proof-list"></div>
+        <label class="file-label">
+          + Attach (boarding pass, stamp, receipt, lease)
+          <input type="file" id="proof-input" accept="image/*,application/pdf" multiple>
+        </label>
+      </div>
+    </div>
+
+    <div id="audit-trail" style="margin-top: 10px;"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-danger" onclick="deleteEntry()">Delete</button>
+      <button class="btn btn-primary" onclick="saveEntry()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Range modal -->
+<div class="modal-overlay" id="range-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3>Add Date Range</h3>
+        <div class="date-sub">Log many days at once</div>
+      </div>
+      <button class="close-btn" onclick="closeRangeModal()">✕</button>
+    </div>
+
+    <div class="info-block">
+      All selected days get the same jurisdiction, location, and notes. Edit individual days after.
+    </div>
+
+    <div class="range-row">
+      <div class="field">
+        <label>From</label>
+        <input type="date" id="range-from">
+      </div>
+      <div class="field">
+        <label>To</label>
+        <input type="date" id="range-to">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Jurisdiction</label>
+      <div class="juris-picker five" id="range-juris-picker">
+        <button data-j="cyprus" onclick="setRangeJuris('cyprus')">Cyprus</button>
+        <button data-j="lithuania" onclick="setRangeJuris('lithuania')">Lithuania</button>
+        <button data-j="uk" onclick="setRangeJuris('uk')">UK</button>
+        <button data-j="other" onclick="setRangeJuris('other')">Other</button>
+        <button data-j="transit" onclick="setRangeJuris('transit')">Transit</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Location</label>
+      <input type="text" id="range-location" placeholder="e.g. Vilnius">
+    </div>
+
+    <div class="field">
+      <label>Notes (applied to all)</label>
+      <textarea id="range-notes" placeholder="Optional"></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeRangeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRange()">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3>Ledger Settings</h3>
+        <div class="date-sub">Thresholds &amp; data</div>
+      </div>
+      <button class="close-btn" onclick="closeSettingsModal()">✕</button>
+    </div>
+
+    <div class="info-block">
+      <strong>Not tax advice.</strong> Tax residence rules in Cyprus, Lithuania, and the UK interact with each other via treaties and tie-breaker rules. This tool tracks days; your adviser interprets meaning.
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-label">Calendar year (Cyprus, Lithuania)</div>
+      <select id="current-cal-year" onchange="saveSettings()"></select>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-label">UK tax year</div>
+      <select id="current-uk-year" onchange="saveSettings()"></select>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-label">UK status — Arriver or Leaver?</div>
+      <div class="settings-description">
+        Since you were recently UK-resident, you're a <strong>Leaver</strong>. This stays in effect for 3 years after departure, and means tighter day-count thresholds apply based on your ties.
+      </div>
+      <select id="arriver-leaver" onchange="saveSettings()">
+        <option value="leaver">Leaver — was UK resident in prior 3 years</option>
+        <option value="arriver">Arriver — not resident any of prior 3 years</option>
+      </select>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-label">UK SRT ties</div>
+      <div class="settings-description">
+        Tick any UK ties that apply after you leave. Work and 90-day ties are calculated automatically.
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label class="check-row">
+          <input type="checkbox" id="tie-family-chk" onchange="saveSettings()">
+          <span>
+            Family tie
+            <span class="hint">UK-resident spouse, civil partner, or minor child</span>
+          </span>
+        </label>
+        <label class="check-row">
+          <input type="checkbox" id="tie-accom-chk" onchange="saveSettings()">
+          <span>
+            Accommodation tie
+            <span class="hint">UK home available, used at least one night</span>
+          </span>
+        </label>
+        <label class="check-row">
+          <input type="checkbox" id="tie-country-chk" onchange="saveSettings()">
+          <span>
+            Country tie <span style="color:var(--muted);">(leavers only)</span>
+            <span class="hint">UK is where you spent most midnights</span>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-label">Cyprus 60-day rule — my situation</div>
+      <div class="settings-description">
+        The 60-day rule requires: 60+ days in Cyprus, no other tax residence, no 183+ days in any other country, and ties (business/employment/directorship + home) in Cyprus.
+      </div>
+      <label class="check-row">
+        <input type="checkbox" id="cy-ties-chk" onchange="saveSettings()">
+        <span>
+          I maintain Cyprus ties
+          <span class="hint">Permanent home + business/employment/directorship</span>
+        </span>
+      </label>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-label">Backup reminders</div>
+      <select id="backup-interval" onchange="saveSettings()">
+        <option value="7">Weekly</option>
+        <option value="14">Fortnightly</option>
+        <option value="30">Monthly</option>
+        <option value="0">Off</option>
+      </select>
+      <div id="last-backup" style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 6px;">No backup yet</div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-label">Export</div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+        <button class="btn btn-secondary" onclick="exportJSON()">Backup JSON</button>
+      </div>
+      <div class="btn-row" style="margin-top: 8px;">
+        <button class="btn btn-secondary" onclick="exportAdviserPDF()" style="grid-column: span 2;">Adviser Summary (printable)</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-label">Import backup</div>
+      <label class="file-label">
+        Select JSON backup
+        <input type="file" id="import-input" accept="application/json" onchange="importJSON(event)">
+      </label>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-label">Danger zone</div>
+      <button class="btn btn-danger" style="width: 100%;" onclick="wipeAll()">Erase all data</button>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <button onclick="openRangeModal()">+ Range</button>
+  <button class="primary" onclick="openTodayModal()">Log Today</button>
+  <button onclick="openSettingsModal()">Settings</button>
+</div>
+
+<script>
+  // ============ STATE ============
+  let entries = {};
+  // entry: { jurisdiction: 'cyprus'|'lithuania'|'uk'|'other'|'transit',
+  //          location, purpose, notes, flight,
+  //          workedUK, workedCY, proofs:[], createdAt, modifiedAt }
+  let settings = {
+    currentCalYear: null,
+    currentUkYear: null,
+    arriverLeaver: 'leaver',
+    tieFamily: false,
+    tieAccom: false,
+    tieCountry: false,
+    cyprusTies: false,
+    backupInterval: 30,
+    lastBackup: null
+  };
+  let viewDate = new Date();
+  let heatmapYear = new Date().getFullYear();
+  let currentEditDate = null;
+  let currentJuris = null;
+  let rangeJuris = null;
+  let currentProofs = [];
+
+  const STORAGE_KEY_ENTRIES = 'entries_v3';
+  const STORAGE_KEY_SETTINGS = 'settings_v3';
+
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const hasStorage = typeof window.storage !== 'undefined';
+
+  async function saveToStorage(key, value) {
+    if (hasStorage) {
+      try { await window.storage.set(key, JSON.stringify(value)); }
+      catch (e) { console.error('Save failed', e); }
+    }
+  }
+  async function loadFromStorage(key) {
+    if (hasStorage) {
+      try {
+        const r = await window.storage.get(key);
+        if (r && r.value) return JSON.parse(r.value);
+      } catch (e) { return null; }
+    }
+    return null;
+  }
+
+  // ============ DATES ============
+  function toDateKey(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  function fromDateKey(k) {
+    const [y,m,d] = k.split('-').map(Number);
+    return new Date(y,m-1,d);
+  }
+  function daysBetween(a,b) { return Math.round((b-a)/(1000*60*60*24)); }
+  function shortDate(d) {
+    return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});
+  }
+
+  // ============ TAX YEAR BOUNDS ============
+  function getCalendarBounds(year) {
+    return { start: new Date(year,0,1), end: new Date(year,11,31,23,59,59) };
+  }
+  function getUKBounds(yearStart) {
+    return { start: new Date(yearStart,3,6), end: new Date(yearStart+1,3,5,23,59,59) };
+  }
+  function getCurrentCalYear() { return new Date().getFullYear(); }
+  function getCurrentUKYear() {
+    const now = new Date();
+    if (now.getMonth() < 3 || (now.getMonth() === 3 && now.getDate() < 6)) return now.getFullYear() - 1;
+    return now.getFullYear();
+  }
+  function formatUKYear(y) { return `${y}/${String(y+1).slice(2)}`; }
+
+  // ============ STATS ============
+  function getStats() {
+    const calYear = settings.currentCalYear ?? getCurrentCalYear();
+    const ukYear = settings.currentUkYear ?? getCurrentUKYear();
+    const calBounds = getCalendarBounds(calYear);
+    const ukBounds = getUKBounds(ukYear);
+
+    let cyDays=0, ltDays=0, ukCalDays=0, otherDays=0, transitDays=0;
+    let ukTyDays=0, ukWorkTyDays=0;
+    let totalEntries=0, proofCount=0;
+    const calCountries = {};
+    const otherCountryDays = {};
+
+    for (const [key, e] of Object.entries(entries)) {
+      const d = fromDateKey(key);
+      totalEntries++;
+      if (e.proofs && e.proofs.length>0) proofCount++;
+
+      // Calendar year (Cyprus & Lithuania)
+      if (d >= calBounds.start && d <= calBounds.end) {
+        if (e.jurisdiction === 'cyprus') cyDays++;
+        else if (e.jurisdiction === 'lithuania') ltDays++;
+        else if (e.jurisdiction === 'uk') ukCalDays++;
+        else if (e.jurisdiction === 'other') {
+          otherDays++;
+          const loc = (e.location || 'Unknown').trim();
+          otherCountryDays[loc] = (otherCountryDays[loc] || 0) + 1;
+        }
+        else if (e.jurisdiction === 'transit') transitDays++;
+
+        // Country accumulation
+        const label = e.jurisdiction === 'cyprus' ? (e.location || 'Cyprus')
+                    : e.jurisdiction === 'lithuania' ? (e.location || 'Lithuania')
+                    : e.jurisdiction === 'uk' ? (e.location || 'UK')
+                    : e.jurisdiction === 'transit' ? 'Transit'
+                    : (e.location || 'Unknown');
+        if (e.jurisdiction !== 'transit') {
+          calCountries[label] = (calCountries[label] || 0) + 1;
+        }
+      }
+
+      // UK tax year (SRT)
+      if (d >= ukBounds.start && d <= ukBounds.end) {
+        if (e.jurisdiction === 'uk') {
+          ukTyDays++;
+          if (e.workedUK) ukWorkTyDays++;
+        }
+      }
+    }
+
+    // Other countries: max individual country
+    const otherMax = Object.values(otherCountryDays).reduce((m,v) => Math.max(m,v), 0);
+    const otherMaxCountry = Object.entries(otherCountryDays).sort((a,b) => b[1]-a[1])[0];
+
+    // Coverage for calendar year
+    const today = new Date();
+    const effectiveEnd = today < calBounds.end ? today : calBounds.end;
+    const daysInCalYear = Math.max(1, daysBetween(calBounds.start, effectiveEnd)+1);
+    let loggedInCalYear = 0;
+    for (const k of Object.keys(entries)) {
+      const d = fromDateKey(k);
+      if (d >= calBounds.start && d <= effectiveEnd) loggedInCalYear++;
+    }
+    const coverage = Math.round((loggedInCalYear / daysInCalYear) * 100);
+
+    return {
+      cyDays, ltDays, ukCalDays, otherDays, transitDays,
+      ukTyDays, ukWorkTyDays,
+      totalEntries, proofCount,
+      calCountries, otherCountryDays, otherMax, otherMaxCountry,
+      calBounds, ukBounds, coverage,
+      daysInCalYear: daysBetween(calBounds.start, calBounds.end)+1,
+      loggedInCalYear,
+      calYear, ukYear
+    };
+  }
+
+  // ============ UK SRT TIE LOGIC ============
+  function hasNinetyDayTie(ukYearStart) {
+    for (let offset = 1; offset <= 2; offset++) {
+      const b = getUKBounds(ukYearStart - offset);
+      let ukDays = 0;
+      for (const [k,e] of Object.entries(entries)) {
+        const d = fromDateKey(k);
+        if (d >= b.start && d <= b.end && e.jurisdiction === 'uk') ukDays++;
+      }
+      if (ukDays >= 90) return true;
+    }
+    return false;
+  }
+
+  function getUKTieCount(stats) {
+    let c = 0;
+    if (settings.tieFamily) c++;
+    if (settings.tieAccom) c++;
+    if (stats.ukWorkTyDays >= 40) c++;
+    if (hasNinetyDayTie(stats.ukYear)) c++;
+    if (settings.arriverLeaver === 'leaver' && settings.tieCountry) c++;
+    return c;
+  }
+
+  function getUKThreshold(stats) {
+    const ties = getUKTieCount(stats);
+    if (settings.arriverLeaver === 'leaver') {
+      if (ties >= 4) return { limit: 16, ties, label: `Leaver · ${ties} ties` };
+      if (ties === 3) return { limit: 46, ties, label: `Leaver · ${ties} ties` };
+      if (ties === 2) return { limit: 91, ties, label: `Leaver · ${ties} ties` };
+      if (ties === 1) return { limit: 121, ties, label: `Leaver · 1 tie` };
+      return { limit: 183, ties, label: `Leaver · 0 ties` };
+    }
+    if (ties >= 4) return { limit: 46, ties, label: `Arriver · ${ties} ties` };
+    if (ties === 3) return { limit: 91, ties, label: `Arriver · ${ties} ties` };
+    if (ties === 2) return { limit: 121, ties, label: `Arriver · ${ties} ties` };
+    return { limit: 183, ties, label: `Arriver · ${ties} ties` };
+  }
+
+  // ============ GAP DETECTION ============
+  function findGaps() {
+    const cy = settings.currentCalYear ?? getCurrentCalYear();
+    const bounds = getCalendarBounds(cy);
+    const today = new Date();
+    const endDate = today < bounds.end ? today : bounds.end;
+
+    const keys = Object.keys(entries).filter(k => {
+      const d = fromDateKey(k);
+      return d >= bounds.start && d <= endDate;
+    }).sort();
+
+    if (keys.length < 2) return [];
+
+    const gaps = [];
+    const first = fromDateKey(keys[0]);
+    const last = fromDateKey(keys[keys.length-1]);
+    const cur = new Date(first);
+    cur.setDate(cur.getDate()+1);
+
+    while (cur <= last) {
+      const k = toDateKey(cur);
+      if (!entries[k]) {
+        const gapStart = new Date(cur);
+        while (cur <= last && !entries[toDateKey(cur)]) {
+          cur.setDate(cur.getDate()+1);
+        }
+        const gapEnd = new Date(cur);
+        gapEnd.setDate(gapEnd.getDate()-1);
+        gaps.push({ start: gapStart, end: gapEnd, days: daysBetween(gapStart, gapEnd)+1 });
+      } else {
+        cur.setDate(cur.getDate()+1);
+      }
+    }
+    return gaps;
+  }
+
+  // ============ TRIP GROUPING ============
+  function groupTrips() {
+    const keys = Object.keys(entries).sort();
+    if (keys.length === 0) return [];
+
+    const trips = [];
+    let cur = null;
+
+    for (const k of keys) {
+      const e = entries[k];
+      const d = fromDateKey(k);
+      const loc = e.location || (
+        e.jurisdiction === 'cyprus' ? 'Cyprus' :
+        e.jurisdiction === 'lithuania' ? 'Lithuania' :
+        e.jurisdiction === 'uk' ? 'UK' :
+        e.jurisdiction === 'transit' ? 'Transit' : 'Unknown'
+      );
+
+      if (!cur || cur.jurisdiction !== e.jurisdiction || cur.location !== loc ||
+          daysBetween(fromDateKey(cur.endKey), d) > 1) {
+        if (cur) trips.push(cur);
+        cur = {
+          startKey: k, endKey: k,
+          jurisdiction: e.jurisdiction,
+          location: loc, days: 1,
+          hasProof: (e.proofs||[]).length > 0,
+          keys: [k]
+        };
+      } else {
+        cur.endKey = k;
+        cur.days++;
+        cur.keys.push(k);
+        if ((e.proofs||[]).length > 0) cur.hasProof = true;
+      }
+    }
+    if (cur) trips.push(cur);
+    return trips.reverse();
+  }
+
+  // ============ RENDER: DASHBOARD ============
+  function renderDashboard() {
+    const s = getStats();
+    const uk = getUKThreshold(s);
+
+    document.getElementById('cy-days').textContent = s.cyDays;
+    document.getElementById('lt-days').textContent = s.ltDays;
+    document.getElementById('uk-days').textContent = s.ukTyDays;
+    document.getElementById('other-days').textContent = s.otherDays;
+    document.getElementById('transit-days').textContent = s.transitDays;
+    document.getElementById('total-entries').textContent = s.totalEntries;
+    document.getElementById('proof-count').textContent = s.proofCount;
+    document.getElementById('coverage-pct').textContent = s.coverage;
+    document.getElementById('coverage-meta').textContent = `${s.loggedInCalYear} of ${s.daysInCalYear} days · ${s.calYear}`;
+
+    document.getElementById('cy-year').textContent = String(s.calYear);
+    document.getElementById('lt-year').textContent = String(s.calYear);
+    document.getElementById('uk-year').textContent = formatUKYear(s.ukYear);
+    document.getElementById('uk-ty-label').textContent = `Tax year ${formatUKYear(s.ukYear)}`;
+    document.getElementById('uk-threshold-value').textContent = uk.limit;
+    document.getElementById('uk-threshold-label').textContent = `${uk.limit}d cap`;
+
+    // Cyprus bar & status
+    const cyPct = Math.min(100, (s.cyDays/60)*100);
+    document.getElementById('cy-bar').style.width = cyPct + '%';
+    const cyStatus = document.getElementById('cy-status');
+    if (s.cyDays >= 60) {
+      cyStatus.className = 'juris-status good';
+      cyStatus.textContent = `✓ 60-day minimum met`;
+    } else {
+      cyStatus.className = 'juris-status warn';
+      cyStatus.textContent = `${60 - s.cyDays} day${60-s.cyDays===1?'':'s'} to go`;
+    }
+
+    // Lithuania
+    const ltPct = Math.min(100, (s.ltDays/183)*100);
+    document.getElementById('lt-bar').style.width = ltPct + '%';
+    const ltStatus = document.getElementById('lt-status');
+    if (s.ltDays >= 183) {
+      ltStatus.className = 'juris-status danger';
+      ltStatus.textContent = `⚠ 183 days reached`;
+    } else if (s.ltDays >= 150) {
+      ltStatus.className = 'juris-status warn';
+      ltStatus.textContent = `${183 - s.ltDays} days headroom`;
+    } else {
+      ltStatus.className = 'juris-status good';
+      ltStatus.textContent = `${183 - s.ltDays} days headroom`;
+    }
+
+    // UK
+    const ukPct = Math.min(100, (s.ukTyDays/uk.limit)*100);
+    document.getElementById('uk-bar').style.width = ukPct + '%';
+    const ukStatus = document.getElementById('uk-status');
+    if (s.ukTyDays >= uk.limit) {
+      ukStatus.className = 'juris-status danger';
+      ukStatus.textContent = `⚠ exceeded ${uk.limit}d limit`;
+    } else if (s.ukTyDays >= uk.limit * 0.8) {
+      ukStatus.className = 'juris-status warn';
+      ukStatus.textContent = `${uk.limit - s.ukTyDays}d headroom · ${uk.ties} ties`;
+    } else {
+      ukStatus.className = 'juris-status good';
+      ukStatus.textContent = `${uk.limit - s.ukTyDays}d headroom · ${uk.ties} ties`;
+    }
+
+    // Other countries
+    if (s.otherMaxCountry) {
+      document.getElementById('other-max-meta').textContent =
+        `Max: ${s.otherMaxCountry[0]} · ${s.otherMaxCountry[1]}d`;
+    } else {
+      document.getElementById('other-max-meta').textContent = `Max single: 0d`;
+    }
+
+    // Primary banner - picks the most concerning jurisdiction
+    renderPrimaryBanner(s, uk);
+    renderSRTSummary(s, uk);
+    renderCountries(s);
+    renderGapList();
+  }
+
+  function renderPrimaryBanner(s, uk) {
+    const banner = document.getElementById('primary-banner');
+    const msgs = [];
+    let cls = 'safe';
+
+    // Check each jurisdiction
+    if (s.cyDays < 60) {
+      const remaining = 60 - s.cyDays;
+      msgs.push({
+        priority: 3,
+        cls: 'warn',
+        html: `<strong>Cyprus:</strong> ${remaining} day${remaining===1?'':'s'} still needed to meet the 60-day minimum this calendar year.`
+      });
+    }
+
+    if (s.ltDays >= 183) {
+      msgs.push({
+        priority: 1, cls: 'danger',
+        html: `<strong>Lithuania:</strong> You've reached 183 days — Lithuania may claim you as tax resident this calendar year.`
+      });
+    } else if (s.ltDays >= 150) {
+      msgs.push({
+        priority: 2, cls: 'warn',
+        html: `<strong>Lithuania:</strong> ${183 - s.ltDays} days remaining before hitting the 183-day residence threshold.`
+      });
+    }
+
+    if (s.ukTyDays >= uk.limit) {
+      msgs.push({
+        priority: 1, cls: 'danger',
+        html: `<strong>UK:</strong> You've exceeded your ${uk.limit}-day limit (${uk.label}) — you may be UK tax resident for ${formatUKYear(s.ukYear)}.`
+      });
+    } else if (s.ukTyDays >= uk.limit * 0.8) {
+      msgs.push({
+        priority: 2, cls: 'warn',
+        html: `<strong>UK:</strong> ${uk.limit - s.ukTyDays} days remaining before your ${uk.limit}-day cap (${uk.label}).`
+      });
+    }
+
+    // Check other countries
+    Object.entries(s.otherCountryDays).forEach(([c, d]) => {
+      if (d >= 183) {
+        msgs.push({
+          priority: 1, cls: 'danger',
+          html: `<strong>${c}:</strong> ${d} days — may trigger tax residence.`
+        });
+      } else if (d >= 150) {
+        msgs.push({
+          priority: 2, cls: 'warn',
+          html: `<strong>${c}:</strong> ${d} days — approaching 183-day threshold.`
+        });
+      }
+    });
+
+    if (msgs.length === 0) {
+      banner.className = 'banner safe';
+      banner.innerHTML = `<strong>All thresholds clear.</strong>
+        <span class="mono">CY ${s.cyDays}/60 · LT ${s.ltDays}/183 · UK ${s.ukTyDays}/${uk.limit}</span>`;
+      return;
+    }
+
+    msgs.sort((a,b) => a.priority - b.priority);
+    cls = msgs[0].cls;
+    banner.className = 'banner ' + cls;
+    banner.innerHTML = msgs.slice(0,3).map(m => m.html).join('<br><br>') +
+      `<span class="mono">CY ${s.cyDays}/60 · LT ${s.ltDays}/183 · UK ${s.ukTyDays}/${uk.limit}</span>`;
+  }
+
+  function renderSRTSummary(s, uk) {
+    const el = document.getElementById('srt-summary');
+    const ninetyDayTie = hasNinetyDayTie(s.ukYear);
+    const countryTieApplies = settings.arriverLeaver === 'leaver' && settings.tieCountry;
+
+    el.innerHTML = `
+      <span class="label">UK days in tax year</span>
+      <span class="val ${s.ukTyDays >= uk.limit ? 'warn' : ''}">${s.ukTyDays} / ${uk.limit}</span>
+      <span class="label">UK work days (3h+)</span>
+      <span class="val ${s.ukWorkTyDays >= 40 ? 'warn' : ''}">${s.ukWorkTyDays} / 40</span>
+      <hr>
+      <span class="label">Family tie</span>
+      <span class="val">${settings.tieFamily ? '✓ Yes' : '— No'}</span>
+      <span class="label">Accommodation tie</span>
+      <span class="val">${settings.tieAccom ? '✓ Yes' : '— No'}</span>
+      <span class="label">Work tie (40+ UK work days)</span>
+      <span class="val">${s.ukWorkTyDays >= 40 ? '✓ Yes' : '— No'}</span>
+      <span class="label">90-day tie (prior 2 UK years)</span>
+      <span class="val">${ninetyDayTie ? '✓ Yes' : '— No'}</span>
+      <span class="label">Country tie (leaver)</span>
+      <span class="val">${settings.arriverLeaver === 'leaver' ? (settings.tieCountry ? '✓ Yes' : '— No') : 'N/A'}</span>
+      <hr>
+      <span class="label">Ties total</span>
+      <span class="val">${uk.ties} / ${settings.arriverLeaver === 'leaver' ? 5 : 4}</span>
+      <span class="label">Applicable day limit</span>
+      <span class="val">${uk.limit} days · ${uk.label}</span>
+    `;
+  }
+
+  function renderCountries(s) {
+    const stack = document.getElementById('country-stack');
+    const list = Object.entries(s.calCountries).sort((a,b) => b[1]-a[1]);
+    if (list.length === 0) {
+      stack.innerHTML = '<div class="empty-state" style="padding: 20px;">No country data yet.</div>';
+      return;
+    }
+    stack.innerHTML = list.slice(0, 10).map(([n, d]) => `
+      <div class="country-row">
+        <span>${escapeHtml(n)}</span>
+        <span style="color: var(--muted);">${Math.round(d/s.daysInCalYear*100)}%</span>
+        <span class="days">${d}</span>
+      </div>
+    `).join('');
+  }
+
+  function renderGapList() {
+    const gaps = findGaps();
+    const container = document.getElementById('gap-list');
+    if (gaps.length === 0) {
+      container.style.display = 'none';
+      return;
+    }
+    container.style.display = 'block';
+    const total = gaps.reduce((a,g) => a+g.days, 0);
+    container.innerHTML = `
+      <div class="gap-list-title">Unlogged days · ${total} day${total===1?'':'s'} across ${gaps.length} gap${gaps.length===1?'':'s'}</div>
+      ${gaps.slice(0,5).map(g => {
+        const k = toDateKey(g.start);
+        return `<div class="gap-item" onclick="openDayModal('${k}')">
+          <span>${shortDate(g.start)}${g.days>1 ? ' → '+shortDate(g.end) : ''}</span>
+          <span>${g.days}d</span>
+        </div>`;
+      }).join('')}
+      ${gaps.length > 5 ? `<div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 6px;">+${gaps.length-5} more</div>` : ''}
+    `;
+  }
+
+  // ============ RENDER: CALENDAR ============
+  function renderCalendar() {
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    document.getElementById('cal-title').textContent = `${MONTH_NAMES[month]} ${year}`;
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month+1, 0);
+    const startOffset = (firstDay.getDay()+6) % 7;
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+
+    for (let i=0; i<startOffset; i++) {
+      const e = document.createElement('div');
+      e.className = 'cal-day empty';
+      grid.appendChild(e);
+    }
+
+    const todayKey = toDateKey(new Date());
+    const gaps = findGaps();
+    const gapKeys = new Set();
+    gaps.forEach(g => {
+      const c = new Date(g.start);
+      while (c <= g.end) {
+        gapKeys.add(toDateKey(c));
+        c.setDate(c.getDate()+1);
+      }
+    });
+
+    for (let day=1; day<=lastDay.getDate(); day++) {
+      const d = new Date(year, month, day);
+      const k = toDateKey(d);
+      const e = entries[k];
+      const cell = document.createElement('button');
+      cell.className = 'cal-day';
+      cell.textContent = day;
+      cell.dataset.date = k;
+      if (k === todayKey) cell.classList.add('today');
+      if (e) {
+        cell.classList.add('j-' + e.jurisdiction);
+        if (e.proofs && e.proofs.length>0) cell.classList.add('has-proof');
+        if (e.workedUK || e.workedCY) cell.classList.add('worked');
+      } else if (gapKeys.has(k)) {
+        cell.classList.add('gap');
+      }
+      cell.addEventListener('click', () => openDayModal(k));
+      grid.appendChild(cell);
+    }
+  }
+
+  // ============ RENDER: ENTRIES ============
+  function renderEntries() {
+    const list = document.getElementById('entries-list');
+    const sorted = Object.entries(entries).sort((a,b) => b[0].localeCompare(a[0])).slice(0,10);
+
+    if (sorted.length === 0) {
+      list.innerHTML = '<div class="empty-state">No entries yet. Tap Log Today below.</div>';
+      return;
+    }
+
+    list.innerHTML = sorted.map(([k,e]) => {
+      const d = fromDateKey(k);
+      const labels = {
+        cyprus: 'Cyprus', lithuania: 'Lithuania', uk: 'UK',
+        other: 'Other', transit: 'Transit'
+      };
+      const loc = e.location ? `<div>${escapeHtml(e.location)}${e.purpose ? ` <span style="color:var(--muted);font-size:12px;">· ${escapeHtml(e.purpose)}</span>` : ''}</div>` : '';
+      const notes = e.notes ? `<div class="entry-note">${escapeHtml(e.notes.slice(0,80))}${e.notes.length>80?'…':''}</div>` : '';
+      const meta = [];
+      if (e.workedUK) meta.push('UK WORK');
+      if (e.workedCY) meta.push('CY WORK');
+      if (e.flight) meta.push(escapeHtml(e.flight));
+      if (e.proofs && e.proofs.length>0) meta.push(`● ${e.proofs.length} proof${e.proofs.length>1?'s':''}`);
+      const metaStr = meta.length > 0 ? `<div class="entry-meta">${meta.join(' · ')}</div>` : '';
+
+      return `
+        <div class="entry" onclick="openDayModal('${k}')">
+          <div class="entry-date">${shortDate(d)}</div>
+          <div class="entry-body">
+            ${loc || '<div style="color:var(--muted);font-style:italic;">No location</div>'}
+            ${notes}
+            ${metaStr}
+          </div>
+          <div class="entry-status j-${e.jurisdiction}">${labels[e.jurisdiction]}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ============ RENDER: TRIPS ============
+  function renderTrips() {
+    const trips = groupTrips();
+    const container = document.getElementById('trips-list');
+    document.getElementById('trips-count').textContent = trips.length;
+    if (trips.length === 0) {
+      container.innerHTML = '<div class="empty-state">No trips logged yet.</div>';
+      return;
+    }
+    const colors = {
+      cyprus: 'var(--cy)', lithuania: 'var(--lt)', uk: 'var(--uk)',
+      other: 'var(--other)', transit: 'var(--transit)'
+    };
+    const labels = {
+      cyprus: 'Cyprus', lithuania: 'Lithuania', uk: 'UK',
+      other: 'Other', transit: 'Transit'
+    };
+    container.innerHTML = trips.slice(0,50).map(t => {
+      const s = fromDateKey(t.startKey);
+      const e = fromDateKey(t.endKey);
+      return `
+        <div class="trip-card" onclick="openDayModal('${t.startKey}')" style="border-left: 3px solid ${colors[t.jurisdiction]};">
+          <div class="trip-card-head">
+            <div class="trip-destination">${escapeHtml(t.location)}</div>
+            <div class="trip-duration">${t.days} day${t.days===1?'':'s'}</div>
+          </div>
+          <div class="trip-dates">
+            ${shortDate(s)}${t.days>1 ? ' → '+shortDate(e) : ''} · ${labels[t.jurisdiction]}
+            ${t.hasProof ? ' · <span style="color: var(--accent);">✓ proof</span>' : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ============ RENDER: HEATMAP ============
+  function renderHeatmap() {
+    document.getElementById('year-title').textContent = String(heatmapYear);
+    document.getElementById('year-label').textContent = String(heatmapYear);
+    const grid = document.getElementById('heatmap-grid');
+    grid.innerHTML = '';
+
+    const yearStart = new Date(heatmapYear, 0, 1);
+    const yearEnd = new Date(heatmapYear, 11, 31);
+    const startOffset = (yearStart.getDay()+6) % 7;
+
+    const todayKey = toDateKey(new Date());
+    const cells = [];
+    for (let i=0; i<startOffset; i++) cells.push(null);
+    const cur = new Date(yearStart);
+    while (cur <= yearEnd) {
+      cells.push(new Date(cur));
+      cur.setDate(cur.getDate()+1);
+    }
+    while (cells.length % 7 !== 0) cells.push(null);
+
+    grid.style.gridAutoFlow = 'column';
+    grid.style.gridTemplateRows = 'repeat(7, 1fr)';
+    grid.style.gridTemplateColumns = `repeat(${cells.length/7}, 1fr)`;
+
+    for (const d of cells) {
+      const cell = document.createElement('div');
+      cell.className = 'heatmap-cell';
+      if (!d) { cell.classList.add('empty'); }
+      else {
+        const k = toDateKey(d);
+        if (entries[k]) cell.classList.add('j-' + entries[k].jurisdiction);
+        if (k === todayKey) cell.classList.add('today');
+        cell.addEventListener('click', () => {
+          switchTab('calendar');
+          viewDate = new Date(d);
+          renderCalendar();
+          setTimeout(() => openDayModal(k), 100);
+        });
+      }
+      grid.appendChild(cell);
+    }
+
+    document.getElementById('heatmap-months').innerHTML = MONTH_SHORT.map(m => `<div>${m}</div>`).join('');
+  }
+
+  // ============ HELPERS ============
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ============ DAY MODAL ============
+  function openDayModal(dateKey) {
+    currentEditDate = dateKey;
+    const date = fromDateKey(dateKey);
+    const existing = entries[dateKey] || {};
+
+    document.getElementById('modal-title').textContent = date.toLocaleDateString('en-GB', { day:'numeric', month:'long' });
+    document.getElementById('modal-subtitle').textContent = date.toLocaleDateString('en-GB', { weekday:'long', year:'numeric' });
+
+    document.querySelectorAll('#day-modal .juris-picker button').forEach(b => b.classList.remove('active'));
+    currentJuris = existing.jurisdiction || null;
+    if (existing.jurisdiction) {
+      const btn = document.querySelector(`#day-modal [data-j="${existing.jurisdiction}"]`);
+      if (btn) btn.classList.add('active');
+    }
+
+    document.getElementById('modal-location').value = existing.location || '';
+    document.getElementById('modal-purpose').value = existing.purpose || '';
+    document.getElementById('modal-notes').value = existing.notes || '';
+    document.getElementById('modal-flight').value = existing.flight || '';
+    document.getElementById('modal-worked-uk').checked = !!existing.workedUK;
+    document.getElementById('modal-worked-cy').checked = !!existing.workedCY;
+
+    currentProofs = existing.proofs ? [...existing.proofs] : [];
+    renderProofList();
+
+    const audit = document.getElementById('audit-trail');
+    if (existing.createdAt || existing.modifiedAt) {
+      const parts = [];
+      if (existing.createdAt) parts.push(`Created ${new Date(existing.createdAt).toLocaleString('en-GB')}`);
+      if (existing.modifiedAt && existing.modifiedAt !== existing.createdAt) {
+        parts.push(`Edited ${new Date(existing.modifiedAt).toLocaleString('en-GB')}`);
+      }
+      audit.innerHTML = `<span class="audit-badge">${parts.join(' · ')}</span>`;
+    } else {
+      audit.innerHTML = '';
+    }
+
+    document.getElementById('day-modal').classList.add('active');
+  }
+
+  function closeModal() {
+    document.getElementById('day-modal').classList.remove('active');
+    currentEditDate = null;
+    currentProofs = [];
+    currentJuris = null;
+  }
+
+  function setJuris(j) {
+    currentJuris = j;
+    document.querySelectorAll('#day-modal .juris-picker button').forEach(b => b.classList.remove('active'));
+    document.querySelector(`#day-modal [data-j="${j}"]`).classList.add('active');
+    // Smart defaults
+    const loc = document.getElementById('modal-location');
+    if (!loc.value) {
+      if (j === 'cyprus') loc.value = '';
+      else if (j === 'lithuania') loc.value = '';
+      else if (j === 'uk') loc.value = '';
+    }
+  }
+
+  function renderProofList() {
+    const list = document.getElementById('proof-list');
+    if (currentProofs.length === 0) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:12px;font-style:italic;text-align:center;padding:8px;">No proof attached</div>';
+      return;
+    }
+    list.innerHTML = currentProofs.map((p,i) => `
+      <div class="proof-item">
+        <div class="proof-item-info">
+          <div class="proof-name">${escapeHtml(p.name)}</div>
+          <div class="proof-size">${formatSize(p.size)} · ${p.type||'file'}</div>
+        </div>
+        <div class="proof-actions">
+          <button class="proof-btn" onclick="viewProof(${i})">View</button>
+          <button class="proof-btn del" onclick="removeProof(${i})">×</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function formatSize(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+    return (b/(1024*1024)).toFixed(1) + ' MB';
+  }
+
+  function viewProof(i) {
+    const p = currentProofs[i];
+    if (!p.data) return;
+    const w = window.open();
+    if (p.type && p.type.startsWith('image/')) {
+      w.document.write(`<title>${escapeHtml(p.name)}</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${p.data}" style="max-width:100%;max-height:100vh;"></body>`);
+    } else {
+      w.location.href = p.data;
+    }
+  }
+
+  function removeProof(i) {
+    currentProofs.splice(i,1);
+    renderProofList();
+  }
+
+  document.getElementById('proof-input').addEventListener('change', async (e) => {
+    for (const file of Array.from(e.target.files)) {
+      if (file.size > 3*1024*1024) {
+        alert(`"${file.name}" is over 3MB. Use a smaller image.`);
+        continue;
+      }
+      const data = await fileToDataURL(file);
+      currentProofs.push({
+        name: file.name, size: file.size, type: file.type,
+        data: data, addedAt: new Date().toISOString()
+      });
+    }
+    renderProofList();
+    e.target.value = '';
+  });
+
+  function fileToDataURL(f) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(f);
+    });
+  }
+
+  async function saveEntry() {
+    if (!currentEditDate) return;
+    if (!currentJuris) {
+      alert('Please select a jurisdiction.');
+      return;
+    }
+    const now = new Date().toISOString();
+    const existing = entries[currentEditDate] || {};
+
+    entries[currentEditDate] = {
+      jurisdiction: currentJuris,
+      location: document.getElementById('modal-location').value.trim(),
+      purpose: document.getElementById('modal-purpose').value,
+      notes: document.getElementById('modal-notes').value.trim(),
+      flight: document.getElementById('modal-flight').value.trim(),
+      workedUK: document.getElementById('modal-worked-uk').checked,
+      workedCY: document.getElementById('modal-worked-cy').checked,
+      proofs: currentProofs,
+      createdAt: existing.createdAt || now,
+      modifiedAt: now
+    };
+    await saveToStorage(STORAGE_KEY_ENTRIES, entries);
+    closeModal();
+    renderAll();
+  }
+
+  async function deleteEntry() {
+    if (!currentEditDate) return;
+    if (!confirm('Delete this day\'s entry?')) return;
+    delete entries[currentEditDate];
+    await saveToStorage(STORAGE_KEY_ENTRIES, entries);
+    closeModal();
+    renderAll();
+  }
+
+  function openTodayModal() {
+    openDayModal(toDateKey(new Date()));
+  }
+
+  // ============ RANGE MODAL ============
+  function openRangeModal() {
+    const t = toDateKey(new Date());
+    document.getElementById('range-from').value = t;
+    document.getElementById('range-to').value = t;
+    document.getElementById('range-location').value = '';
+    document.getElementById('range-notes').value = '';
+    document.querySelectorAll('#range-juris-picker button').forEach(b => b.classList.remove('active'));
+    rangeJuris = null;
+    document.getElementById('range-modal').classList.add('active');
+  }
+
+  function closeRangeModal() {
+    document.getElementById('range-modal').classList.remove('active');
+  }
+
+  function setRangeJuris(j) {
+    rangeJuris = j;
+    document.querySelectorAll('#range-juris-picker button').forEach(b => b.classList.remove('active'));
+    document.querySelector(`#range-juris-picker [data-j="${j}"]`).classList.add('active');
+  }
+
+  async function saveRange() {
+    const from = document.getElementById('range-from').value;
+    const to = document.getElementById('range-to').value;
+    if (!from || !to) { alert('Choose a date range.'); return; }
+    if (!rangeJuris) { alert('Choose a jurisdiction.'); return; }
+    const fd = fromDateKey(from), td = fromDateKey(to);
+    if (fd > td) { alert('"From" must be before "To".'); return; }
+
+    const location = document.getElementById('range-location').value.trim();
+    const notes = document.getElementById('range-notes').value.trim();
+    const now = new Date().toISOString();
+
+    const cur = new Date(fd);
+    while (cur <= td) {
+      const k = toDateKey(cur);
+      const existing = entries[k] || {};
+      entries[k] = {
+        jurisdiction: rangeJuris,
+        location: location || existing.location || '',
+        purpose: existing.purpose || '',
+        notes: notes || existing.notes || '',
+        flight: existing.flight || '',
+        workedUK: existing.workedUK || false,
+        workedCY: existing.workedCY || false,
+        proofs: existing.proofs || [],
+        createdAt: existing.createdAt || now,
+        modifiedAt: now
+      };
+      cur.setDate(cur.getDate()+1);
+    }
+    await saveToStorage(STORAGE_KEY_ENTRIES, entries);
+    closeRangeModal();
+    renderAll();
+  }
+
+  // ============ SETTINGS ============
+  function openSettingsModal() {
+    populateYearSelects();
+    document.getElementById('current-cal-year').value = settings.currentCalYear ?? getCurrentCalYear();
+    document.getElementById('current-uk-year').value = settings.currentUkYear ?? getCurrentUKYear();
+    document.getElementById('arriver-leaver').value = settings.arriverLeaver;
+    document.getElementById('tie-family-chk').checked = settings.tieFamily;
+    document.getElementById('tie-accom-chk').checked = settings.tieAccom;
+    document.getElementById('tie-country-chk').checked = settings.tieCountry;
+    document.getElementById('cy-ties-chk').checked = settings.cyprusTies;
+    document.getElementById('backup-interval').value = settings.backupInterval;
+
+    const lb = document.getElementById('last-backup');
+    if (settings.lastBackup) {
+      const days = Math.floor((Date.now() - new Date(settings.lastBackup).getTime())/(1000*60*60*24));
+      lb.textContent = `Last backup: ${new Date(settings.lastBackup).toLocaleDateString('en-GB')} (${days} day${days===1?'':'s'} ago)`;
+    } else { lb.textContent = 'No backup yet'; }
+
+    document.getElementById('settings-modal').classList.add('active');
+  }
+
+  function closeSettingsModal() {
+    document.getElementById('settings-modal').classList.remove('active');
+  }
+
+  function populateYearSelects() {
+    const calSel = document.getElementById('current-cal-year');
+    const ukSel = document.getElementById('current-uk-year');
+    const curCal = getCurrentCalYear();
+    const curUk = getCurrentUKYear();
+    calSel.innerHTML = '';
+    ukSel.innerHTML = '';
+    for (let y=curCal-3; y<=curCal+1; y++) {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = String(y);
+      calSel.appendChild(o);
+    }
+    for (let y=curUk-3; y<=curUk+1; y++) {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = formatUKYear(y);
+      ukSel.appendChild(o);
+    }
+  }
+
+  async function saveSettings() {
+    const cal = document.getElementById('current-cal-year').value;
+    const uk = document.getElementById('current-uk-year').value;
+    settings.currentCalYear = cal ? parseInt(cal) : null;
+    settings.currentUkYear = uk ? parseInt(uk) : null;
+    settings.arriverLeaver = document.getElementById('arriver-leaver').value;
+    settings.tieFamily = document.getElementById('tie-family-chk').checked;
+    settings.tieAccom = document.getElementById('tie-accom-chk').checked;
+    settings.tieCountry = document.getElementById('tie-country-chk').checked;
+    settings.cyprusTies = document.getElementById('cy-ties-chk').checked;
+    settings.backupInterval = parseInt(document.getElementById('backup-interval').value);
+    await saveToStorage(STORAGE_KEY_SETTINGS, settings);
+    populateYearSelects();
+    renderAll();
+  }
+
+  // ============ EXPORT / IMPORT ============
+  function exportCSV() {
+    const rows = [['Date','Jurisdiction','Location','Purpose','WorkedUK','WorkedCY','Flight','Notes','Proofs','Created','Modified']];
+    Object.entries(entries).sort((a,b) => a[0].localeCompare(b[0])).forEach(([k,e]) => {
+      rows.push([
+        k, e.jurisdiction, e.location||'', e.purpose||'',
+        e.workedUK?'Yes':'', e.workedCY?'Yes':'',
+        e.flight||'', (e.notes||'').replace(/\n/g,' '),
+        (e.proofs||[]).map(p => p.name).join('; '),
+        e.createdAt||'', e.modifiedAt||''
+      ]);
+    });
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    download(csv, 'domicile-ledger.csv', 'text/csv');
+    recordBackup();
+  }
+
+  function exportJSON() {
+    const data = JSON.stringify({ entries, settings, exportedAt: new Date().toISOString(), version: 3 }, null, 2);
+    download(data, `domicile-backup-${toDateKey(new Date())}.json`, 'application/json');
+    recordBackup();
+  }
+
+  function exportAdviserPDF() {
+    const s = getStats();
+    const uk = getUKThreshold(s);
+    const trips = groupTrips().slice(0, 150);
+    const gaps = findGaps();
+
+    const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Residency Summary — ${s.calYear}</title>
+<style>
+  body { font-family: Georgia, serif; max-width: 800px; margin: 40px auto; padding: 20px; color: #222; line-height: 1.5; }
+  h1 { border-bottom: 2px solid #000; padding-bottom: 8px; }
+  h2 { border-bottom: 1px solid #999; padding-bottom: 4px; margin-top: 30px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid #ddd; }
+  th { background: #f0f0f0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .juris-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 15px 0; }
+  .juris-box { border: 2px solid #000; padding: 14px; }
+  .juris-box.cy { border-color: #0b5394; }
+  .juris-box.lt { border-color: #7a6a3d; }
+  .juris-box.uk { border-color: #1a1512; }
+  .juris-box .lbl { font-size: 11px; text-transform: uppercase; color: #666; letter-spacing: 0.08em; }
+  .juris-box .val { font-size: 36px; font-weight: bold; margin: 8px 0 4px; }
+  .juris-box .sub { font-size: 11px; color: #666; }
+  .warn { color: #8b2f1d; }
+  .good { color: #4a6b3a; }
+  .footer { margin-top: 40px; font-size: 11px; color: #888; border-top: 1px solid #ccc; padding-top: 10px; }
+  @media print { body { margin: 20px; } }
+</style></head><body>
+<h1>Multi-Jurisdiction Residency Summary</h1>
+<p><em>Calendar year ${s.calYear} · UK tax year ${formatUKYear(s.ukYear)} · Generated ${new Date().toLocaleString('en-GB')}. Personal record — not tax advice.</em></p>
+
+<h2>Jurisdictional Day Counts</h2>
+<div class="juris-grid">
+  <div class="juris-box cy">
+    <div class="lbl">Cyprus — 60-day rule</div>
+    <div class="val ${s.cyDays >= 60 ? 'good' : 'warn'}">${s.cyDays}</div>
+    <div class="sub">${s.cyDays >= 60 ? '✓ 60-day minimum met' : (60 - s.cyDays) + ' days still needed'}</div>
+    <div class="sub">Cyprus ties declared: ${settings.cyprusTies ? 'Yes' : 'No'}</div>
+  </div>
+  <div class="juris-box lt">
+    <div class="lbl">Lithuania — 183-day limit</div>
+    <div class="val ${s.ltDays >= 183 ? 'warn' : (s.ltDays >= 150 ? 'warn' : 'good')}">${s.ltDays}</div>
+    <div class="sub">${s.ltDays >= 183 ? '⚠ 183-day threshold reached' : (183 - s.ltDays) + ' days headroom'}</div>
+  </div>
+  <div class="juris-box uk">
+    <div class="lbl">UK — ${uk.label}</div>
+    <div class="val ${s.ukTyDays >= uk.limit ? 'warn' : 'good'}">${s.ukTyDays}</div>
+    <div class="sub">Limit ${uk.limit}d · ${uk.ties} ties · tax year ${formatUKYear(s.ukYear)}</div>
+    <div class="sub">${s.ukTyDays >= uk.limit ? '⚠ Exceeded limit' : (uk.limit - s.ukTyDays) + ' days headroom'}</div>
+  </div>
+</div>
+
+<h2>UK SRT Tie Breakdown</h2>
+<table><tbody>
+<tr><td>Family tie</td><td>${settings.tieFamily ? '✓ Yes' : '— No'}</td></tr>
+<tr><td>Accommodation tie</td><td>${settings.tieAccom ? '✓ Yes' : '— No'}</td></tr>
+<tr><td>Work tie (40+ UK work days)</td><td>${s.ukWorkTyDays >= 40 ? '✓ Yes ('+s.ukWorkTyDays+' days)' : '— No ('+s.ukWorkTyDays+' days)'}</td></tr>
+<tr><td>90-day tie (prior 2 UK tax years)</td><td>${hasNinetyDayTie(s.ukYear) ? '✓ Yes' : '— No'}</td></tr>
+<tr><td>Country tie</td><td>${settings.arriverLeaver === 'leaver' ? (settings.tieCountry ? '✓ Yes' : '— No') : 'N/A (arriver)'}</td></tr>
+<tr><td><strong>Total ties</strong></td><td><strong>${uk.ties} / ${settings.arriverLeaver === 'leaver' ? 5 : 4}</strong></td></tr>
+<tr><td><strong>Applicable UK day limit</strong></td><td><strong>${uk.limit} days (${uk.label})</strong></td></tr>
+</tbody></table>
+
+<h2>Days by Location — ${s.calYear}</h2>
+<table><thead><tr><th>Location</th><th>Days</th><th>% of year</th></tr></thead><tbody>
+${Object.entries(s.calCountries).sort((a,b) => b[1]-a[1]).map(([n,d]) =>
+  `<tr><td>${escapeHtml(n)}</td><td>${d}</td><td>${Math.round(d/s.daysInCalYear*100)}%</td></tr>`
+).join('')}
+</tbody></table>
+
+${gaps.length > 0 ? `<h2 class="warn">⚠ Unlogged Days</h2>
+<p>${gaps.length} gap${gaps.length===1?'':'s'} totalling ${gaps.reduce((a,g)=>a+g.days,0)} day${gaps.reduce((a,g)=>a+g.days,0)===1?'':'s'}:</p>
+<table><thead><tr><th>From</th><th>To</th><th>Days</th></tr></thead><tbody>
+${gaps.map(g => `<tr><td>${shortDate(g.start)}</td><td>${shortDate(g.end)}</td><td>${g.days}</td></tr>`).join('')}
+</tbody></table>` : ''}
+
+<h2>Trip Log</h2>
+<table><thead><tr><th>From</th><th>To</th><th>Days</th><th>Jurisdiction</th><th>Location</th><th>Proof</th></tr></thead><tbody>
+${trips.map(t => {
+  const labels = { cyprus:'Cyprus', lithuania:'Lithuania', uk:'UK', other:'Other', transit:'Transit' };
+  return `<tr>
+    <td>${shortDate(fromDateKey(t.startKey))}</td>
+    <td>${shortDate(fromDateKey(t.endKey))}</td>
+    <td>${t.days}</td>
+    <td>${labels[t.jurisdiction]}</td>
+    <td>${escapeHtml(t.location)}</td>
+    <td>${t.hasProof ? '✓' : ''}</td>
+  </tr>`;
+}).join('')}
+</tbody></table>
+
+<div class="footer">
+  Domicile Ledger · Multi-jurisdiction personal record · Not tax advice. Treaty tie-breakers and centre-of-vital-interests tests may override day-count determinations — consult a qualified adviser.
+</div>
+</body></html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `residency-summary-${s.calYear}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+    recordBackup();
+  }
+
+  async function recordBackup() {
+    settings.lastBackup = new Date().toISOString();
+    await saveToStorage(STORAGE_KEY_SETTINGS, settings);
+  }
+
+  function download(content, filename, type) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function importJSON(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!confirm('This will replace all current data. Proceed?')) {
+      e.target.value = '';
+      return;
+    }
+    const text = await file.text();
+    try {
+      const data = JSON.parse(text);
+
+      // Migration from v1/v2: translate old `status` field to `jurisdiction`
+      if (data.entries) {
+        const migrated = {};
+        for (const [k, e] of Object.entries(data.entries)) {
+          if (e.jurisdiction) {
+            migrated[k] = e;
+          } else if (e.status) {
+            // v1/v2 migration
+            let j = 'other';
+            if (e.status === 'in-uk') j = 'uk';
+            else if (e.status === 'transit') j = 'transit';
+            else if (e.status === 'out-uk') {
+              // Guess from location
+              const loc = (e.location || '').toLowerCase();
+              if (loc.includes('cyprus') || loc.includes('limassol') || loc.includes('nicosia') || loc.includes('paphos') || loc.includes('larnaca')) j = 'cyprus';
+              else if (loc.includes('lithuania') || loc.includes('vilnius') || loc.includes('kaunas')) j = 'lithuania';
+              else j = 'other';
+            }
+            migrated[k] = {
+              jurisdiction: j,
+              location: e.location || '',
+              purpose: e.purpose || '',
+              notes: e.notes || '',
+              flight: e.flight || '',
+              workedUK: !!e.worked,
+              workedCY: false,
+              proofs: e.proofs || [],
+              createdAt: e.createdAt || null,
+              modifiedAt: e.modifiedAt || null
+            };
+          }
+        }
+        entries = migrated;
+      }
+      if (data.settings) settings = { ...settings, ...data.settings };
+      await saveToStorage(STORAGE_KEY_ENTRIES, entries);
+      await saveToStorage(STORAGE_KEY_SETTINGS, settings);
+      closeSettingsModal();
+      renderAll();
+      alert('Import complete.');
+    } catch (err) {
+      alert('Invalid backup file.');
+    }
+    e.target.value = '';
+  }
+
+  async function wipeAll() {
+    if (!confirm('Erase ALL entries and settings? This cannot be undone.')) return;
+    if (!confirm('Really erase everything?')) return;
+    entries = {};
+    settings = {
+      currentCalYear: null, currentUkYear: null,
+      arriverLeaver: 'leaver',
+      tieFamily: false, tieAccom: false, tieCountry: false,
+      cyprusTies: false,
+      backupInterval: 30, lastBackup: null
+    };
+    if (hasStorage) {
+      try {
+        await window.storage.delete(STORAGE_KEY_ENTRIES);
+        await window.storage.delete(STORAGE_KEY_SETTINGS);
+      } catch (e) {}
+    }
+    closeSettingsModal();
+    renderAll();
+  }
+
+  // ============ BACKUP REMINDER ============
+  function checkBackupDue() {
+    if (!settings.backupInterval || settings.backupInterval === 0) return;
+    if (Object.keys(entries).length === 0) return;
+    if (!settings.lastBackup) {
+      const first = Object.values(entries)
+        .map(e => e.createdAt ? new Date(e.createdAt).getTime() : 0)
+        .filter(t => t > 0).sort()[0];
+      if (first && (Date.now() - first) > settings.backupInterval * 24*60*60*1000) {
+        setTimeout(() => {
+          if (confirm(`${Object.keys(entries).length} entries logged but no backup yet. Back up now?`)) {
+            exportJSON();
+          }
+        }, 2000);
+      }
+      return;
+    }
+    const days = (Date.now() - new Date(settings.lastBackup).getTime())/(1000*60*60*24);
+    if (days >= settings.backupInterval) {
+      setTimeout(() => {
+        if (confirm(`Last backup ${Math.floor(days)} days ago. Back up now?`)) exportJSON();
+      }, 2000);
+    }
+  }
+
+  // ============ NAV ============
+  document.getElementById('prev-month').addEventListener('click', () => {
+    viewDate.setMonth(viewDate.getMonth()-1); renderCalendar();
+  });
+  document.getElementById('next-month').addEventListener('click', () => {
+    viewDate.setMonth(viewDate.getMonth()+1); renderCalendar();
+  });
+  document.getElementById('prev-year').addEventListener('click', () => {
+    heatmapYear--; renderHeatmap();
+  });
+  document.getElementById('next-year').addEventListener('click', () => {
+    heatmapYear++; renderHeatmap();
+  });
+
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => switchTab(t.dataset.tab));
+  });
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+    if (name === 'year') renderHeatmap();
+    if (name === 'trips') renderTrips();
+    if (name === 'calendar') renderCalendar();
+  }
+
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', (e) => {
+      if (e.target === o) o.classList.remove('active');
+    });
+  });
+
+  // ============ INIT ============
+  function renderAll() {
+    renderDashboard();
+    renderCalendar();
+    renderEntries();
+    renderTrips();
+    if (document.getElementById('tab-year').classList.contains('active')) renderHeatmap();
+  }
+
+  async function init() {
+    const le = await loadFromStorage(STORAGE_KEY_ENTRIES);
+    const ls = await loadFromStorage(STORAGE_KEY_SETTINGS);
+    if (le) entries = le;
+    if (ls) settings = { ...settings, ...ls };
+
+    document.getElementById('today-date').textContent =
+      new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }).toUpperCase();
+
+    renderAll();
+    checkBackupDue();
+  }
+
+  init();
+</script>
+</body>
+</html>
